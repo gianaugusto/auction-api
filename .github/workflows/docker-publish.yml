@@ -31,7 +31,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: ./src/AutoAuction.API
-        file: Dockerfile  # This is relative to the context
+        file: ./src/AutoAuction.API/Dockerfile
         push: ${{ github.event_name == 'push' }}
         tags: |
           gianaugusto/auction-image-api:latest
