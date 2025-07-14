@@ -32,7 +32,7 @@ jobs:
       with:
         context: ./src/AutoAuction.API
         file: ./src/AutoAuction.API/Dockerfile
-        push: ${{ github.event_name == 'push' }}
+        push: true
         tags: |
           gianaugusto/auction-image-api:latest
           gianaugusto/auction-image-api:${{ steps.vars.outputs.SHORT_SHA }}
