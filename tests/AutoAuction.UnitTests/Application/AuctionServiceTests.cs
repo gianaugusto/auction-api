@@ -2,6 +2,8 @@ using System;
 using System.Linq;
 using AutoAuction.Application;
 using AutoAuction.Domain;
+using AutoAuction.Domain.Repositories;
+using Moq;
 using Xunit;
 
 namespace AutoAuction.UnitTests.Application
@@ -12,7 +14,8 @@ namespace AutoAuction.UnitTests.Application
         public void AddVehicle_ShouldAddVehicleToInventory()
         {
             // Arrange
-            var service = new AuctionService();
+            var mockRepository = new Mock<IAuctionRepository>();
+            var service = new AuctionService(mockRepository.Object);
             var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
 
             // Act
@@ -28,7 +31,8 @@ namespace AutoAuction.UnitTests.Application
         public void AddVehicle_ShouldThrowException_WhenVehicleIdAlreadyExists()
         {
             // Arrange
-            var service = new AuctionService();
+            var mockRepository = new Mock<IAuctionRepository>();
+            var service = new AuctionService(mockRepository.Object);
             var vehicle1 = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
             var vehicle2 = new Hatchback("V001", "Honda", "Civic", 2019, 6000m, 5);
 
@@ -41,7 +45,8 @@ namespace AutoAuction.UnitTests.Application
         public void StartAuction_ShouldStartAuctionForVehicle()
         {
             // Arrange
-            var service = new AuctionService();
+            var mockRepository = new Mock<IAuctionRepository>();
+            var service = new AuctionService(mockRepository.Object);
             var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
             service.AddVehicle(vehicle);
 
@@ -49,36 +54,54 @@ namespace AutoAuction.UnitTests.Application
             service.StartAuction("V001");
 
             // Assert
-            Assert.Throws<InvalidOperationException>(() => service.StartAuction("V001"));
+            mockRepository.Verify(r => r.AddAuction(It.IsAny<Auction>()), Times.Once);
         }
 
         [Fact]
         public void PlaceBid_ShouldPlaceBidOnActiveAuction()
         {
             // Arrange
-            var service = new AuctionService();
-            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
-            service.AddVehicle(vehicle);
-            service.StartAuction("V001");
+            var mockRepository = new Mock<IAuctionRepository>();
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            auction.StartAuction();
+            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+
+            var service = new AuctionService(mockRepository.Object);
 
             // Act
-            service.PlaceBid("V001", "Bidder1", 6000m);
+            service.PlaceBid(1, "Bidder1", 6000m);
 
             // Assert
-            // We can't directly check the bid amount, but we can verify that no exception was thrown
-            Assert.True(true);
+            Assert.Equal(6000m, auction.CurrentHighestBid);
         }
 
         [Fact]
         public void PlaceBid_ShouldThrowException_WhenAuctionIsNotActive()
         {
             // Arrange
-            var service = new AuctionService();
-            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
-            service.AddVehicle(vehicle);
+            var mockRepository = new Mock<IAuctionRepository>();
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+
+            var service = new AuctionService(mockRepository.Object);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => service.PlaceBid("V001", "Bidder1", 6000m));
+            Assert.Throws<InvalidOperationException>(() => service.PlaceBid(1, "Bidder1", 6000m));
+        }
+
+        [Fact]
+        public void PlaceBid_ShouldThrowException_WhenBidAmountIsInvalid()
+        {
+            // Arrange
+            var mockRepository = new Mock<IAuctionRepository>();
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            auction.StartAuction();
+            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+
+            var service = new AuctionService(mockRepository.Object);
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => service.PlaceBid(1, "Bidder1", 4000m));
         }
     }
 }

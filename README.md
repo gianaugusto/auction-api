@@ -1,29 +1,105 @@
 # Car Auction Management System
 
-This project implements a simple Car Auction Management System using C# and object-oriented design principles. The system handles different types of vehicles (Sedans, SUVs, Hatchbacks, and Trucks) and allows users to add vehicles to the auction inventory, search for vehicles, start and close auctions, and place bids.
+This is a simple Car Auction Management System implemented in C#. The system allows users to:
+
+1. Add vehicles to the auction inventory
+2. Search for vehicles by type, manufacturer, model, or year
+3. Start and close auctions for vehicles
+4. Place bids on vehicles during active auctions
 
 ## Design Decisions
 
-1. **Vehicle Hierarchy**: We created a base `Vehicle` class with common properties and methods, and then created specific classes for each vehicle type (Hatchback, Sedan, SUV, Truck) that inherit from the base class. This allows for code reuse and easy extension if more vehicle types need to be added in the future.
+### Object-Oriented Design
 
-2. **Auction Management**: The `Auction` class encapsulates the auction functionality, including starting an auction, placing bids, and closing an auction. This class is responsible for maintaining the state of an auction and ensuring that bids are valid.
+The system uses object-oriented design principles to model the different components:
 
-3. **Auction Service**: The `AuctionService` class manages the overall auction process, including adding vehicles to the inventory, searching for vehicles, and managing active auctions. This class provides a higher-level interface for interacting with the auction system.
+1. **Vehicle** - An abstract base class that defines common properties for all vehicle types
+2. **Vehicle Types** - Concrete classes for Hatchback, Sedan, SUV, and Truck that inherit from Vehicle
+3. **Auction** - A class that represents an auction for a vehicle, including bid management
+4. **AuctionService** - A service class that handles the business logic for managing auctions
 
-4. **Error Handling**: The system includes error handling for various scenarios, such as attempting to add a vehicle with a duplicate ID, starting an auction for a vehicle that doesn't exist or is already in an active auction, and placing a bid on a vehicle that doesn't have an active auction or with an invalid bid amount.
+### Repository Pattern
 
-5. **Unit Tests**: The system includes unit tests for the `Auction` and `AuctionService` classes to ensure that the functionality works as expected and that error handling is properly implemented.
+The repository pattern is used to abstract data access:
 
-## Assumptions
+1. **IAuctionRepository** - An interface that defines the contract for auction data access
+2. **AuctionRepository** - A concrete implementation of the repository interface
 
-1. The system does not include a user interface or database, as the focus is on the structure of the code and the quality of the tests.
-2. The system assumes that all vehicle IDs are unique and that all bid amounts are in the same currency.
-3. The system does not include any authentication or authorization mechanisms, as the focus is on the core auction functionality.
+### Dependency Injection
 
-## Future Improvements
+Dependency injection is used to manage dependencies:
 
-1. Add a user interface to allow users to interact with the system.
-2. Implement a database to persist the auction data.
-3. Add authentication and authorization mechanisms to secure the system.
-4. Implement more advanced search functionality, such as searching by price range or vehicle features.
-5. Add support for multiple currencies and currency conversion.
+1. Services are registered in the `Program.cs` file
+2. Dependencies are injected through constructors
+
+### Error Handling
+
+Error handling is implemented for various scenarios:
+
+1. Adding a vehicle with a duplicate ID
+2. Starting an auction for a non-existent vehicle or one already in an active auction
+3. Placing a bid on a non-active auction or with an invalid bid amount
+
+## How to Use
+
+### Adding a Vehicle
+
+To add a vehicle to the inventory, send a POST request to `/api/auction/vehicles` with a JSON body containing the vehicle details:
+
+```json
+{
+  "id": "V001",
+  "type": "Hatchback",
+  "manufacturer": "Toyota",
+  "model": "Yaris",
+  "year": 2020,
+  "startingBid": 5000.00,
+  "numberOfDoors": 5
+}
+```
+
+### Searching for Vehicles
+
+To search for vehicles, send a GET request to `/api/auction/vehicles` with query parameters:
+
+```
+/api/auction/vehicles?type=SUV&manufacturer=Ford
+```
+
+### Starting an Auction
+
+To start an auction for a vehicle, send a POST request to `/api/auction/auctions` with a JSON body:
+
+```json
+{
+  "vehicleId": "V001"
+}
+```
+
+### Placing a Bid
+
+To place a bid on an active auction, send a POST request to `/api/auction/auctions/{auctionId}/bids` with a JSON body:
+
+```json
+{
+  "bidderId": "Bidder1",
+  "bidAmount": 6000.00
+}
+```
+
+### Closing an Auction
+
+To close an active auction, send a POST request to `/api/auction/auctions/{auctionId}/close`.
+
+### Getting Active Auctions
+
+To get a list of active auctions, send a GET request to `/api/auction/auctions/active`.
+
+## Running the Application
+
+1. Build and run the application using `dotnet run` in the `src/AutoAuction.API` directory
+2. The API will be available at `https://localhost:5001/api/auction`
+
+## Running Tests
+
+1. Run the unit tests using `dotnet test` in the `tests/AutoAuction.UnitTests` directory

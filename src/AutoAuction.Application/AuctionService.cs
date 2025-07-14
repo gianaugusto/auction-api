@@ -2,13 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AutoAuction.Domain;
+using AutoAuction.Domain.Repositories;
 
 namespace AutoAuction.Application
 {
     public class AuctionService
     {
+        private readonly IAuctionRepository _auctionRepository;
         private readonly Dictionary<string, Vehicle> inventory = new Dictionary<string, Vehicle>();
-        private readonly Dictionary<string, Auction> activeAuctions = new Dictionary<string, Auction>();
+
+        public AuctionService(IAuctionRepository auctionRepository)
+        {
+            _auctionRepository = auctionRepository ?? throw new ArgumentNullException(nameof(auctionRepository));
+        }
 
         public void AddVehicle(Vehicle vehicle)
         {
@@ -33,37 +39,33 @@ namespace AutoAuction.Application
             if (!inventory.ContainsKey(vehicleId))
                 throw new KeyNotFoundException("Vehicle not found in inventory");
 
-            if (activeAuctions.ContainsKey(vehicleId))
-                throw new InvalidOperationException("Auction for this vehicle is already active");
-
             var vehicle = inventory[vehicleId];
             var auction = new Auction(vehicle);
+            _auctionRepository.AddAuction(auction);
             auction.StartAuction();
-            activeAuctions[vehicleId] = auction;
         }
 
-        public void PlaceBid(string vehicleId, string bidderId, decimal bidAmount)
+        public void PlaceBid(int auctionId, string bidderId, decimal bidAmount)
         {
-            if (!activeAuctions.ContainsKey(vehicleId))
-                throw new InvalidOperationException("No active auction for this vehicle");
+            var auction = _auctionRepository.GetAuctionById(auctionId);
+            if (auction == null)
+                throw new KeyNotFoundException("Auction not found");
 
-            var auction = activeAuctions[vehicleId];
             auction.PlaceBid(bidderId, bidAmount);
         }
 
-        public void CloseAuction(string vehicleId)
+        public void CloseAuction(int auctionId)
         {
-            if (!activeAuctions.ContainsKey(vehicleId))
-                throw new InvalidOperationException("No active auction for this vehicle");
+            var auction = _auctionRepository.GetAuctionById(auctionId);
+            if (auction == null)
+                throw new KeyNotFoundException("Auction not found");
 
-            var auction = activeAuctions[vehicleId];
             auction.CloseAuction();
-            activeAuctions.Remove(vehicleId);
         }
 
-        public Dictionary<string, Auction> GetActiveAuctions()
+        public IEnumerable<Auction> GetActiveAuctions()
         {
-            return activeAuctions;
+            return _auctionRepository.GetAllAuctions().Where(a => a.IsActive);
         }
     }
 }

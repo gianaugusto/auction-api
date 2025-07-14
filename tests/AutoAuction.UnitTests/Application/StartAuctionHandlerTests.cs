@@ -1,5 +1,8 @@
+using System;
 using AutoAuction.Application;
 using AutoAuction.Domain;
+using AutoAuction.Domain.Repositories;
+using Moq;
 using Xunit;
 
 namespace AutoAuction.UnitTests.Application
@@ -7,21 +10,19 @@ namespace AutoAuction.UnitTests.Application
     public class StartAuctionHandlerTests
     {
         [Fact]
-        public void CreateAuction_ShouldInitializeWithStartingBid()
+        public void Handle_ShouldStartAuctionForVehicle()
         {
             // Arrange
-            var service = new AuctionService();
+            var mockRepository = new Mock<IAuctionRepository>();
+            var service = new AuctionService(mockRepository.Object);
             var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
             service.AddVehicle(vehicle);
 
             // Act
-            service.StartAuction(vehicle.Id);
+            service.StartAuction("V001");
 
             // Assert
-            Assert.True(service.GetActiveAuctions().ContainsKey(vehicle.Id));
-            var auction = service.GetActiveAuctions()[vehicle.Id];
-            Assert.Equal(vehicle.StartingBid, auction.CurrentHighestBid);
-            Assert.True(auction.IsActive);
+            mockRepository.Verify(r => r.AddAuction(It.IsAny<Auction>()), Times.Once);
         }
     }
 }

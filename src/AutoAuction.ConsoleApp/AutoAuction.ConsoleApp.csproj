@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AutoAuction.Application\AutoAuction.Application.csproj" />
-    <ProjectReference Include="..\AutoAuction.Domain\AutoAuction.Domain.csproj" />
   </ItemGroup>
 
 </Project>

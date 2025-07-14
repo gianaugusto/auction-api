@@ -6,13 +6,16 @@ namespace AutoAuction.Domain
 {
     public class Auction
     {
+        public int Id { get; private set; }
         public Vehicle Vehicle { get; private set; }
         public bool IsActive { get; private set; }
         public decimal CurrentHighestBid { get; private set; }
         private List<Bid> bids = new List<Bid>();
+        private static int nextId = 1;
 
         public Auction(Vehicle vehicle)
         {
+            Id = nextId++;
             Vehicle = vehicle ?? throw new ArgumentNullException(nameof(vehicle));
             CurrentHighestBid = vehicle.StartingBid;
         }
