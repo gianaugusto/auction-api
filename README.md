@@ -1,78 +1,29 @@
-# AutoAuction
+# Car Auction Management System
 
-AutoAuction is a sample project demonstrating a clean architecture approach for a simple auction system.
+This project implements a simple Car Auction Management System using C# and object-oriented design principles. The system handles different types of vehicles (Sedans, SUVs, Hatchbacks, and Trucks) and allows users to add vehicles to the auction inventory, search for vehicles, start and close auctions, and place bids.
 
-## Project Structure
+## Design Decisions
 
-- **src/AutoAuction.API**: ASP.NET Core presentation layer
-- **src/AutoAuction.Application**: Application services and use cases
-- **src/AutoAuction.Domain**: Domain entities, aggregates, and business rules
-- **src/AutoAuction.Infrastructure**: Technical implementations (e.g., database, integrations)
-- **src/AutoAuction.CrossCutting**: Cross-cutting concerns (logging, authentication, validation)
-- **tests/AutoAuction.UnitTests**: Unit tests for domain and application layers
-- **tests/AutoAuction.IntegrationTests**: Integration tests for the API
+1. **Vehicle Hierarchy**: We created a base `Vehicle` class with common properties and methods, and then created specific classes for each vehicle type (Hatchback, Sedan, SUV, Truck) that inherit from the base class. This allows for code reuse and easy extension if more vehicle types need to be added in the future.
 
-## Getting Started
+2. **Auction Management**: The `Auction` class encapsulates the auction functionality, including starting an auction, placing bids, and closing an auction. This class is responsible for maintaining the state of an auction and ensuring that bids are valid.
 
-1. Clone the repository
-2. Open the solution in Visual Studio or your preferred IDE
-3. Build and run the solution
+3. **Auction Service**: The `AuctionService` class manages the overall auction process, including adding vehicles to the inventory, searching for vehicles, and managing active auctions. This class provides a higher-level interface for interacting with the auction system.
 
-## Running Tests
+4. **Error Handling**: The system includes error handling for various scenarios, such as attempting to add a vehicle with a duplicate ID, starting an auction for a vehicle that doesn't exist or is already in an active auction, and placing a bid on a vehicle that doesn't have an active auction or with an invalid bid amount.
 
-To run the unit tests, use the following command:
+5. **Unit Tests**: The system includes unit tests for the `Auction` and `AuctionService` classes to ensure that the functionality works as expected and that error handling is properly implemented.
 
-```bash
-dotnet test tests/AutoAuction.UnitTests/AutoAuction.UnitTests.csproj
-```
+## Assumptions
 
-To run the integration tests, use the following command:
+1. The system does not include a user interface or database, as the focus is on the structure of the code and the quality of the tests.
+2. The system assumes that all vehicle IDs are unique and that all bid amounts are in the same currency.
+3. The system does not include any authentication or authorization mechanisms, as the focus is on the core auction functionality.
 
-```bash
-dotnet test tests/AutoAuction.IntegrationTests/AutoAuction.IntegrationTests.csproj
-```
+## Future Improvements
 
-## Docker and Docker Compose
-
-This project includes Docker and Docker Compose configurations for easy setup and testing.
-
-### Services
-
-- **api**: The ASP.NET Core API service
-- **db**: PostgreSQL database service
-- **tests**: Unit tests service
-- **integration-tests**: Integration tests service
-
-### Running with Docker Compose
-
-1. Ensure Docker and Docker Compose are installed on your machine
-2. Navigate to the project root directory
-3. Run the following command to start all services:
-
-```bash
-docker-compose up --build
-```
-
-This will build and start the API, database, and test services.
-
-### Running Tests with Docker
-
-To run the unit tests:
-
-```bash
-docker-compose run tests
-```
-
-To run the integration tests:
-
-```bash
-docker-compose run integration-tests
-```
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License.
+1. Add a user interface to allow users to interact with the system.
+2. Implement a database to persist the auction data.
+3. Add authentication and authorization mechanisms to secure the system.
+4. Implement more advanced search functionality, such as searching by price range or vehicle features.
+5. Add support for multiple currencies and currency conversion.

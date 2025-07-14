@@ -6,13 +6,8 @@ namespace AutoAuction.UnitTests.Common
     {
         public static Auction CreateTestAuction()
         {
-            return new Auction
-            {
-                Name = "Test Auction",
-                StartingBid = 100m,
-                CurrentBid = 100m,
-                IsActive = true
-            };
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            return new Auction(vehicle);
         }
     }
 }

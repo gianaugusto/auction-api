@@ -1,3 +1,4 @@
+using System;
 using AutoAuction.Domain;
 using Xunit;
 
@@ -6,26 +7,55 @@ namespace AutoAuction.UnitTests.Domain
     public class AuctionTests
     {
         [Fact]
-        public void CreateAuction_ShouldInitializeWithStartingBid()
+        public void StartAuction_ShouldSetIsActiveToTrue()
         {
             // Arrange
-            var name = "Test Auction";
-            var startingBid = 100m;
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var auction = new Auction(vehicle);
 
             // Act
-            var auction = new Auction
-            {
-                Name = name,
-                StartingBid = startingBid,
-                CurrentBid = startingBid,
-                IsActive = true
-            };
+            auction.StartAuction();
 
             // Assert
-            Assert.Equal(name, auction.Name);
-            Assert.Equal(startingBid, auction.StartingBid);
-            Assert.Equal(startingBid, auction.CurrentBid);
             Assert.True(auction.IsActive);
+        }
+
+        [Fact]
+        public void PlaceBid_ShouldIncreaseCurrentHighestBid()
+        {
+            // Arrange
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var auction = new Auction(vehicle);
+            auction.StartAuction();
+
+            // Act
+            auction.PlaceBid("Bidder1", 6000m);
+
+            // Assert
+            Assert.Equal(6000m, auction.CurrentHighestBid);
+        }
+
+        [Fact]
+        public void PlaceBid_ShouldThrowException_WhenAuctionIsNotActive()
+        {
+            // Arrange
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var auction = new Auction(vehicle);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => auction.PlaceBid("Bidder1", 6000m));
+        }
+
+        [Fact]
+        public void PlaceBid_ShouldThrowException_WhenBidAmountIsInvalid()
+        {
+            // Arrange
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var auction = new Auction(vehicle);
+            auction.StartAuction();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => auction.PlaceBid("Bidder1", 4000m));
         }
     }
 }

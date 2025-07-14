@@ -11,16 +11,16 @@ namespace AutoAuction.UnitTests.Application
         {
             // Arrange
             var service = new AuctionService();
-            var name = "Test Auction";
-            var startingBid = 100m;
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            service.AddVehicle(vehicle);
 
             // Act
-            var auction = service.CreateAuction(name, startingBid);
+            service.StartAuction(vehicle.Id);
 
             // Assert
-            Assert.Equal(name, auction.Name);
-            Assert.Equal(startingBid, auction.StartingBid);
-            Assert.Equal(startingBid, auction.CurrentBid);
+            Assert.True(service.GetActiveAuctions().ContainsKey(vehicle.Id));
+            var auction = service.GetActiveAuctions()[vehicle.Id];
+            Assert.Equal(vehicle.StartingBid, auction.CurrentHighestBid);
             Assert.True(auction.IsActive);
         }
     }
