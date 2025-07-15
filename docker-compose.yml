@@ -7,39 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:80"
-    depends_on:
-      - db
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=auction_db;Username=auction_user;Password=auction_password
-
-  db:
-    build:
-      context: ./docker-compose/postgres
-      dockerfile: Dockerfile
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=auction_user
-      - POSTGRES_PASSWORD=auction_password
-      - POSTGRES_DB=auction_db
-
-  tests:
-    build:
-      context: ./tests/AutoAuction.UnitTests
-      dockerfile: Dockerfile
-    depends_on:
-      - api
-    command: ["dotnet", "test", "--no-build", "--logger", "trx;LogFileName=TestResults.trx"]
-    volumes:
-      - ./tests/AutoAuction.UnitTests/TestResults:/app/TestResults
-
-  integration-tests:
-    build:
-      context: ./tests/AutoAuction.IntegrationTests
-      dockerfile: Dockerfile
-    depends_on:
-      - api
-    command: ["dotnet", "test", "--no-build", "--logger", "trx;LogFileName=TestResults.trx"]
-    volumes:
-      - ./tests/AutoAuction.IntegrationTests/TestResults:/app/TestResults
