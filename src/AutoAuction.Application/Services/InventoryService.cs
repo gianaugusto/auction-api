@@ -12,12 +12,11 @@ using System.Threading.Tasks;
 
 namespace AutoAuction.Application
 {
-    public class InventoryServices : IInventoryService
+    public class InventoryService : IInventoryService
     {
         private readonly IInventoryRepository _inventoryRepository;
-        private readonly Dictionary<string, Vehicle> inventory = new Dictionary<string, Vehicle>();
 
-        public InventoryServices(IInventoryRepository inventoryRepository)
+        public InventoryService(IInventoryRepository inventoryRepository)
         {
             _inventoryRepository = inventoryRepository ?? throw new ArgumentNullException(nameof(inventoryRepository));
         }
@@ -28,11 +27,6 @@ namespace AutoAuction.Application
                 throw new ArgumentNullException(nameof(vehicleDto));
 
             Vehicle vehicle = vehicleDto.ToDomain();
-
-            if (inventory.ContainsKey(vehicle.Id))
-                throw new ArgumentException("Vehicle with this ID already exists", nameof(vehicle));
-
-            inventory[vehicle.Id] = vehicle;
 
             await _inventoryRepository.AddVehicleAsync(vehicle, cancellationToken);
         }

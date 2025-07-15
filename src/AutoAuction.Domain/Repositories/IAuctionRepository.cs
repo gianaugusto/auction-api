@@ -10,6 +10,6 @@ namespace AutoAuction.Domain.Repositories
 
         Task<Auction> GetAuctionByIdAsync(int id, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<Auction>> GetAllAuctionsAsync(bool active = true, CancellationToken cancellationToken = default);
+        Task<IEnumerable<Auction>> GetAllAuctionsAsync(bool isActive, CancellationToken cancellationToken = default);
     }
 }

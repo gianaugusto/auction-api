@@ -1,48 +1,64 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoAuction.Domain;
 using AutoAuction.Domain.Repositories;
+using AutoAuction.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace AutoAuction.Infrastructure.Repositories
 {
     public class InventoryRepository : IInventoryRepository
     {
-        private readonly ConcurrentBag<Vehicle> _vehicles = new();
+        private readonly DbContextOptions<DefaultContext> _options;
 
-        public Task AddVehicleAsync(Vehicle vehicle, CancellationToken cancellationToken = default)
+        public InventoryRepository(DbContextOptions<DefaultContext> options)
+        {
+            _options = options;
+        }
+
+        public async Task AddVehicleAsync(Vehicle vehicle, CancellationToken cancellationToken = default)
         {
             if (vehicle == null)
                 throw new ArgumentNullException(nameof(vehicle));
 
-            if (_vehicles.Any(v => v.Id == vehicle.Id))
+            using var context = new DefaultContext(_options);
+            if (await context.Vehicles.AnyAsync(v => v.Id == vehicle.Id, cancellationToken))
                 throw new ArgumentException("Vehicle with this ID already exists", nameof(vehicle));
 
-            _vehicles.Add(vehicle);
-
-            return Task.CompletedTask;
+            await context.Vehicles.AddAsync(vehicle, cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
         }
 
-        public Task<IEnumerable<Vehicle>> GetVehiclesAsync(string type = null, string manufacturer = null, string model = null, int? year = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<Vehicle>> GetVehiclesAsync(string type = null, string manufacturer = null, string model = null, int? year = null, CancellationToken cancellationToken = default)
         {
             if (year != null && year <= 0)
                 throw new ArgumentOutOfRangeException(nameof(year), "Year must be greater than zero");
 
-            var vehicles = _vehicles.Where(v =>
-                (type == null || v.GetType().Name.Equals(type, System.StringComparison.OrdinalIgnoreCase)) &&
-                (manufacturer == null || v.Manufacturer.Equals(manufacturer, System.StringComparison.OrdinalIgnoreCase)) &&
-                (model == null || v.Model.Equals(model, System.StringComparison.OrdinalIgnoreCase)) &&
-                (year == null || v.Year == year)
-            );
-            return Task.FromResult(vehicles);
+            using var context = new DefaultContext(_options);
+            var query = context.Vehicles.AsQueryable();
+
+            if (!string.IsNullOrEmpty(type))
+                query = query.Where(v => v.GetType().Name.Equals(type, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(manufacturer))
+                query = query.Where(v => v.Manufacturer.Equals(manufacturer, StringComparison.OrdinalIgnoreCase));
+
+            if (!string.IsNullOrEmpty(model))
+                query = query.Where(v => v.Model.Equals(model, StringComparison.OrdinalIgnoreCase));
+
+            if (year.HasValue)
+                query = query.Where(v => v.Year == year.Value);
+
+            return await query.ToListAsync(cancellationToken);
         }
 
-        public Task<Vehicle> GetVehiclesByIdAsync(string vehicleId, CancellationToken cancellationToken)
+        public async Task<Vehicle> GetVehiclesByIdAsync(string vehicleId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_vehicles.FirstOrDefault(o => o.Id==vehicleId));
+            using var context = new DefaultContext(_options);
+            return await context.Vehicles.FindAsync(vehicleId, cancellationToken);
         }
     }
 }

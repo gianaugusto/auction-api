@@ -8,12 +8,15 @@ using AutoAuction.CrossCutting.Logging;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using AutoAuction.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace AutoAuction.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -62,10 +65,17 @@ namespace AutoAuction.API
                 });
             });
 
+            // Register my DB Context
+            builder.Services.AddDbContext<DefaultContext>(options =>
+                    options.UseInMemoryDatabase("AutoAuctionDb"));
+
             // Register application services
-            builder.Services.AddSingleton<IAuctionRepository, AuctionRepository>();
-            builder.Services.AddSingleton<AuctionService>();
+            builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
+            builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
+            builder.Services.AddScoped<IAuctionService,AuctionService>();
+            builder.Services.AddScoped<IInventoryService,InventoryService>();
             builder.Services.AddSingleton<ILogger, Logger>();
+            builder.Services.AddScoped<DatabaseSeeder>();
 
             var app = builder.Build();
 
@@ -74,10 +84,16 @@ namespace AutoAuction.API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+                // Seed the database
+                using (var scope = app.Services.CreateScope())
+                {
+                    var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+                    await seeder.SeedAsync();
+                }
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
 
             // Use exception handling middleware
