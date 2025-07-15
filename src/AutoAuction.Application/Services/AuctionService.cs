@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoAuction.Domain;
 using AutoAuction.Domain.Repositories;
+using AutoAuction.Application.DTOs;
+using AutoAuction.Application.Mappers;
 
 namespace AutoAuction.Application
 {
@@ -16,8 +18,10 @@ namespace AutoAuction.Application
             _auctionRepository = auctionRepository ?? throw new ArgumentNullException(nameof(auctionRepository));
         }
 
-        public void AddVehicle(Vehicle vehicle)
+        public void AddVehicle(VehicleDto vehicleDto)
         {
+            Vehicle vehicle = vehicleDto.ToDomain();
+
             if (inventory.ContainsKey(vehicle.Id))
                 throw new ArgumentException("Vehicle with this ID already exists", nameof(vehicle));
 

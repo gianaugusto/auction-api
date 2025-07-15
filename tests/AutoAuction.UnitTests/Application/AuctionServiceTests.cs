@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using AutoAuction.Application;
+using AutoAuction.Application.DTOs;
 using AutoAuction.Domain;
 using AutoAuction.Domain.Repositories;
 using Moq;
@@ -16,10 +17,19 @@ namespace AutoAuction.UnitTests.Application
             // Arrange
             var mockRepository = new Mock<IAuctionRepository>();
             var service = new AuctionService(mockRepository.Object);
-            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var vehicleDto = new VehicleDto
+            {
+                Id = "V001",
+                Type = "Hatchback",
+                Manufacturer = "Toyota",
+                Model = "Yaris",
+                Year = 2020,
+                StartingBid = 5000m,
+                NumberOfDoors = 5
+            };
 
             // Act
-            service.AddVehicle(vehicle);
+            service.AddVehicle(vehicleDto);
 
             // Assert
             var vehicles = service.SearchVehicles();
@@ -33,12 +43,30 @@ namespace AutoAuction.UnitTests.Application
             // Arrange
             var mockRepository = new Mock<IAuctionRepository>();
             var service = new AuctionService(mockRepository.Object);
-            var vehicle1 = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
-            var vehicle2 = new Hatchback("V001", "Honda", "Civic", 2019, 6000m, 5);
+            var vehicleDto1 = new VehicleDto
+            {
+                Id = "V001",
+                Type = "Hatchback",
+                Manufacturer = "Toyota",
+                Model = "Yaris",
+                Year = 2020,
+                StartingBid = 5000m,
+                NumberOfDoors = 5
+            };
+            var vehicleDto2 = new VehicleDto
+            {
+                Id = "V001",
+                Type = "Hatchback",
+                Manufacturer = "Honda",
+                Model = "Civic",
+                Year = 2019,
+                StartingBid = 6000m,
+                NumberOfDoors = 5
+            };
 
             // Act & Assert
-            service.AddVehicle(vehicle1);
-            Assert.Throws<ArgumentException>(() => service.AddVehicle(vehicle2));
+            service.AddVehicle(vehicleDto1);
+            Assert.Throws<ArgumentException>(() => service.AddVehicle(vehicleDto2));
         }
 
         [Fact]
@@ -47,8 +75,17 @@ namespace AutoAuction.UnitTests.Application
             // Arrange
             var mockRepository = new Mock<IAuctionRepository>();
             var service = new AuctionService(mockRepository.Object);
-            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
-            service.AddVehicle(vehicle);
+            var vehicleDto = new VehicleDto
+            {
+                Id = "V001",
+                Type = "Hatchback",
+                Manufacturer = "Toyota",
+                Model = "Yaris",
+                Year = 2020,
+                StartingBid = 5000m,
+                NumberOfDoors = 5
+            };
+            service.AddVehicle(vehicleDto);
 
             // Act
             service.StartAuction("V001");

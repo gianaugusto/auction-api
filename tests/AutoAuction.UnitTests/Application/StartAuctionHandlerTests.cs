@@ -1,5 +1,6 @@
 using System;
 using AutoAuction.Application;
+using AutoAuction.Application.DTOs;
 using AutoAuction.Domain;
 using AutoAuction.Domain.Repositories;
 using Moq;
@@ -15,8 +16,17 @@ namespace AutoAuction.UnitTests.Application
             // Arrange
             var mockRepository = new Mock<IAuctionRepository>();
             var service = new AuctionService(mockRepository.Object);
-            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
-            service.AddVehicle(vehicle);
+            var vehicleDto = new VehicleDto
+            {
+                Id = "V001",
+                Type = "Hatchback",
+                Manufacturer = "Toyota",
+                Model = "Yaris",
+                Year = 2020,
+                StartingBid = 5000m,
+                NumberOfDoors = 5
+            };
+            service.AddVehicle(vehicleDto);
 
             // Act
             service.StartAuction("V001");
