@@ -10,5 +10,7 @@ namespace AutoAuction.Domain.Repositories
         Task AddVehicleAsync(Vehicle vehicle, CancellationToken cancellationToken = default);
         
         Task<IEnumerable<Vehicle>> GetVehiclesAsync(string type = null, string manufacturer = null, string model = null, int? year = null, CancellationToken cancellationToken = default);
+        
+        Task<Vehicle> GetVehiclesByIdAsync(string vehicleId, CancellationToken cancellationToken);
     }
 }

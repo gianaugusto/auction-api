@@ -4,36 +4,42 @@ using AutoAuction.Domain.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace AutoAuction.Infrastructure.Repositories
 {
     public class AuctionRepository : IAuctionRepository
     {
-        private readonly List<Auction> _auctions = new();
+        private readonly ConcurrentBag<Auction> _auctions = new();
 
-        public void AddAuction(Auction auction)
+        public async Task AddAuctionAsync(Auction auction, CancellationToken cancellationToken = default)
         {
             if (auction == null)
                 throw new ArgumentNullException(nameof(auction));
 
-            _auctions.Add(auction);
+            // Simulate async operation
+            await Task.Run(() => _auctions.Add(auction), cancellationToken);
         }
 
-        public Auction GetAuctionById(int id)
+        public async Task<Auction> GetAuctionByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             if (id <= 0)
                 throw new ArgumentOutOfRangeException(nameof(id), "Auction ID must be greater than zero");
 
-            var auction = _auctions.FirstOrDefault(a => a.Id == id);
+            // Simulate async operation
+            var auction = await Task.Run(() => _auctions.FirstOrDefault(a => a.Id == id), cancellationToken);
             if (auction == null)
                 throw new AuctionNotFoundException(id);
 
             return auction;
         }
 
-        public IEnumerable<Auction> GetAllAuctions()
+        public async Task<IEnumerable<Auction>> GetAllAuctionsAsync(bool active = true, CancellationToken cancellationToken = default)
         {
-            return _auctions.AsReadOnly();
+            // Simulate async operation
+            return await Task.Run(() => _auctions.Where(o => o.IsActive == active), cancellationToken);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using AutoAuction.Domain.Exceptions;
 
@@ -8,11 +9,19 @@ namespace AutoAuction.Domain
     public class Auction
     {
         public int Id { get; private set; }
+
         public Vehicle Vehicle { get; private set; }
+
         public bool IsActive { get; private set; }
+
         public decimal CurrentHighestBid { get; private set; }
+
         private List<Bid> bids = new List<Bid>();
+
         private static int nextId = 1;
+
+        [Timestamp] // just to check if updated
+        public byte[] RowVersion { get; set; }
 
         public Auction(Vehicle vehicle)
         {

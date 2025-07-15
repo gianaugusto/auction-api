@@ -1,13 +1,15 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AutoAuction.Domain.Repositories
 {
     public interface IAuctionRepository
     {
-        void AddAuction(Auction auction);
+        Task AddAuctionAsync(Auction auction, CancellationToken cancellationToken = default);
 
-        Auction GetAuctionById(int id);
-        
-        IEnumerable<Auction> GetAllAuctions();
+        Task<Auction> GetAuctionByIdAsync(int id, CancellationToken cancellationToken = default);
+
+        Task<IEnumerable<Auction>> GetAllAuctionsAsync(bool active = true, CancellationToken cancellationToken = default);
     }
 }

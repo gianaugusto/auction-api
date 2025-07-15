@@ -39,5 +39,10 @@ namespace AutoAuction.Infrastructure.Repositories
             );
             return Task.FromResult(vehicles);
         }
+
+        public Task<Vehicle> GetVehiclesByIdAsync(string vehicleId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(_vehicles.FirstOrDefault(o => o.Id==vehicleId));
+        }
     }
 }

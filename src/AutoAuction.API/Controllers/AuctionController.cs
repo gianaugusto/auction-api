@@ -16,10 +16,12 @@ namespace AutoAuction.API.Controllers
     public class AuctionController : ControllerBase
     {
         private readonly AuctionService _auctionService;
+        private readonly IInventoryService _inventoryService;
 
-        public AuctionController(AuctionService auctionService)
+        public AuctionController(AuctionService auctionService, IInventoryService inventoryService)
         {
             _auctionService = auctionService;
+            _inventoryService = inventoryService;
         }
 
         [HttpPost("vehicles")]
@@ -36,7 +38,7 @@ namespace AutoAuction.API.Controllers
                 return BadRequest(new ApiResponseWithData<IEnumerable<string>> { Success = false, Message = "Validation errors", Data = errors });
             }
 
-            await _auctionService.AddVehicleAsync(vehicleDto, cancellationToken);
+            await _inventoryService.AddVehicleAsync(vehicleDto, cancellationToken);
             return Ok(new ApiResponse { Success = true, Message = "Vehicle added successfully" });
         }
 
@@ -53,7 +55,7 @@ namespace AutoAuction.API.Controllers
                 return BadRequest(new ApiResponse { Success = false, Message = "Invalid vehicle type" });
             }
 
-            var vehicles = await _auctionService.SearchVehiclesAsync(type?.ToString(), manufacturer, model, year, cancellationToken);
+            var vehicles = await _inventoryService.SearchVehiclesAsync(type?.ToString(), manufacturer, model, year, cancellationToken);
             return Ok(new ApiResponseWithData<IEnumerable<Vehicle>> { Success = true, Message = "Vehicles retrieved successfully", Data = vehicles });
         }
 
@@ -108,7 +110,7 @@ namespace AutoAuction.API.Controllers
         [HttpGet("auctions/active")]
         public async Task<IActionResult> GetActiveAuctions(CancellationToken cancellationToken = default)
         {
-            var auctions = await _auctionService.GetActiveAuctionsAsync(cancellationToken);
+            var auctions = await _auctionService.GetActiveAuctionsAsync(cancellationToken:cancellationToken);
             if (auctions == null || !auctions.Any())
             {
                 return Ok(new ApiResponseWithData<List<Auction>> { Success = true, Message = "No active auctions found", Data = new List<Auction>() });
