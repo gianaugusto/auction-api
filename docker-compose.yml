@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: ./src/AutoAuction.API/Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8080:80"
     depends_on:

@@ -30,8 +30,8 @@ jobs:
     - name: Build and push API Docker image
       uses: docker/build-push-action@v6
       with:
-        context: ./src/AutoAuction.API
-        file: ./src/AutoAuction.API/Dockerfile
+        context: .
+        file: ./Dockerfile
         push: true
         tags: |
           gianaugusto/auction-image-api:latest
