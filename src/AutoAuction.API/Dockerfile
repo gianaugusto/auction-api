@@ -3,12 +3,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 
 # Copia toda a pasta src com todos os projetos
-COPY ./src ./src
+COPY src src
 
-# Define a pasta da API como diretório de trabalho
+# Define a pasta da API como diretÃ³rio de trabalho
 WORKDIR /app/src/AutoAuction.API
 
-# Restaura dependências
+# Restaura dependÃªncias
 RUN dotnet restore
 
 # Publica o projeto
@@ -24,5 +24,5 @@ COPY --from=build-env /app/out .
 # Expondo a porta
 EXPOSE 80
 
-# Entry point da aplicação
+# Entry point da aplicaÃ§Ã£o
 ENTRYPOINT ["dotnet", "AutoAuction.API.dll"]
