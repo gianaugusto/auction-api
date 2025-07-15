@@ -1,4 +1,5 @@
 using System;
+using AutoAuction.Domain.Exceptions;
 
 namespace AutoAuction.Domain
 {
@@ -9,6 +10,9 @@ namespace AutoAuction.Domain
         public Hatchback(string id, string manufacturer, string model, int year, decimal startingBid, int numberOfDoors)
             : base(id, manufacturer, model, year, startingBid)
         {
+            if (numberOfDoors <= 0)
+                throw new ArgumentOutOfRangeException(nameof(numberOfDoors), "Number of doors must be greater than zero");
+
             NumberOfDoors = numberOfDoors;
         }
 
@@ -25,6 +29,9 @@ namespace AutoAuction.Domain
         public Sedan(string id, string manufacturer, string model, int year, decimal startingBid, int numberOfDoors)
             : base(id, manufacturer, model, year, startingBid)
         {
+            if (numberOfDoors <= 0)
+                throw new ArgumentOutOfRangeException(nameof(numberOfDoors), "Number of doors must be greater than zero");
+
             NumberOfDoors = numberOfDoors;
         }
 
@@ -41,6 +48,9 @@ namespace AutoAuction.Domain
         public SUV(string id, string manufacturer, string model, int year, decimal startingBid, int numberOfSeats)
             : base(id, manufacturer, model, year, startingBid)
         {
+            if (numberOfSeats <= 0)
+                throw new ArgumentOutOfRangeException(nameof(numberOfSeats), "Number of seats must be greater than zero");
+
             NumberOfSeats = numberOfSeats;
         }
 
@@ -57,6 +67,9 @@ namespace AutoAuction.Domain
         public Truck(string id, string manufacturer, string model, int year, decimal startingBid, decimal loadCapacity)
             : base(id, manufacturer, model, year, startingBid)
         {
+            if (loadCapacity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(loadCapacity), "Load capacity must be greater than zero");
+
             LoadCapacity = loadCapacity;
         }
 

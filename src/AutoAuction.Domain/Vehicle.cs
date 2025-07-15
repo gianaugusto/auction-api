@@ -1,4 +1,5 @@
 using System;
+using AutoAuction.Domain.Exceptions;
 
 namespace AutoAuction.Domain
 {
@@ -15,9 +16,30 @@ namespace AutoAuction.Domain
             if (string.IsNullOrWhiteSpace(id))
                 throw new ArgumentException("Vehicle ID cannot be null or empty", nameof(id));
 
+            if (id.Length > 50)
+                throw new ArgumentException("Vehicle ID cannot exceed 50 characters", nameof(id));
+
+            if (string.IsNullOrWhiteSpace(manufacturer))
+                throw new ArgumentException("Manufacturer cannot be null or empty", nameof(manufacturer));
+
+            if (manufacturer.Length > 100)
+                throw new ArgumentException("Manufacturer name cannot exceed 100 characters", nameof(manufacturer));
+
+            if (string.IsNullOrWhiteSpace(model))
+                throw new ArgumentException("Model cannot be null or empty", nameof(model));
+
+            if (model.Length > 100)
+                throw new ArgumentException("Model name cannot exceed 100 characters", nameof(model));
+
+            if (year < 1886) // First car was made in 1886
+                throw new ArgumentOutOfRangeException(nameof(year), "Year must be 1886 or later");
+
+            if (startingBid <= 0)
+                throw new ArgumentOutOfRangeException(nameof(startingBid), "Starting bid must be greater than zero");
+
             Id = id;
-            Manufacturer = manufacturer ?? throw new ArgumentNullException(nameof(manufacturer));
-            Model = model ?? throw new ArgumentNullException(nameof(model));
+            Manufacturer = manufacturer;
+            Model = model;
             Year = year;
             StartingBid = startingBid;
         }

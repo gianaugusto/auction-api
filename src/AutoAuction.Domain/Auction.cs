@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AutoAuction.Domain.Exceptions;
 
 namespace AutoAuction.Domain
 {
@@ -23,7 +24,7 @@ namespace AutoAuction.Domain
         public void StartAuction()
         {
             if (IsActive)
-                throw new InvalidOperationException("Auction is already active");
+                throw new AuctionAlreadyActiveException();
 
             IsActive = true;
         }
@@ -31,10 +32,16 @@ namespace AutoAuction.Domain
         public void PlaceBid(string bidderId, decimal bidAmount)
         {
             if (!IsActive)
-                throw new InvalidOperationException("Auction is not active");
+                throw new AuctionNotActiveException();
+
+            if (string.IsNullOrWhiteSpace(bidderId))
+                throw new ArgumentException("Bidder ID cannot be null or empty", nameof(bidderId));
+
+            if (bidAmount <= 0)
+                throw new ArgumentException("Bid amount must be greater than zero", nameof(bidAmount));
 
             if (bidAmount <= CurrentHighestBid)
-                throw new ArgumentException("Bid amount must be greater than the current highest bid", nameof(bidAmount));
+                throw new InvalidBidAmountException(bidAmount, CurrentHighestBid);
 
             var bid = new Bid(bidderId, bidAmount);
             bids.Add(bid);
@@ -44,7 +51,7 @@ namespace AutoAuction.Domain
         public void CloseAuction()
         {
             if (!IsActive)
-                throw new InvalidOperationException("Auction is not active");
+                throw new AuctionNotActiveException();
 
             IsActive = false;
         }

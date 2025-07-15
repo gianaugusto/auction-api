@@ -3,6 +3,7 @@ using System.Linq;
 using AutoAuction.Application;
 using AutoAuction.Application.DTOs;
 using AutoAuction.Domain;
+using AutoAuction.Domain.Exceptions;
 using AutoAuction.Domain.Repositories;
 using Moq;
 using Xunit;
@@ -123,7 +124,7 @@ namespace AutoAuction.UnitTests.Application
             var service = new AuctionService(mockRepository.Object);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => service.PlaceBid(1, "Bidder1", 6000m));
+            Assert.Throws<AuctionNotActiveException>(() => service.PlaceBid(1, "Bidder1", 6000m));
         }
 
         [Fact]
@@ -138,7 +139,7 @@ namespace AutoAuction.UnitTests.Application
             var service = new AuctionService(mockRepository.Object);
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => service.PlaceBid(1, "Bidder1", 4000m));
+            Assert.Throws<InvalidBidAmountException>(() => service.PlaceBid(1, "Bidder1", 4000m));
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using AutoAuction.Domain;
+using AutoAuction.Domain.Exceptions;
 using Xunit;
 
 namespace AutoAuction.UnitTests.Domain
@@ -43,7 +44,7 @@ namespace AutoAuction.UnitTests.Domain
             var auction = new Auction(vehicle);
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => auction.PlaceBid("Bidder1", 6000m));
+            Assert.Throws<AuctionNotActiveException>(() => auction.PlaceBid("Bidder1", 6000m));
         }
 
         [Fact]
@@ -55,7 +56,7 @@ namespace AutoAuction.UnitTests.Domain
             auction.StartAuction();
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => auction.PlaceBid("Bidder1", 4000m));
+            Assert.Throws<InvalidBidAmountException>(() => auction.PlaceBid("Bidder1", 4000m));
         }
     }
 }
