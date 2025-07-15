@@ -1,22 +1,28 @@
-# Use the official .NET 8 SDK image as the base image
+# Etapa 1: build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
 
-# Copy the .csproj file and restore dependencies
-COPY *.csproj ./
+# Copia toda a pasta src com todos os projetos
+COPY ./src ./src
+
+# Define a pasta da API como diretório de trabalho
+WORKDIR /app/src/AutoAuction.API
+
+# Restaura dependências
 RUN dotnet restore
 
-# Copy the remaining source code and build the application
-COPY . ./
-RUN dotnet publish -c Release -o out
+# Publica o projeto
+RUN dotnet publish -c Release -o /app/out
 
-# Use the official .NET 8 runtime image as the final image
+# Etapa 2: runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
+
+# Copia os arquivos publicados do build
 COPY --from=build-env /app/out .
 
-# Expose the application's port
+# Expondo a porta
 EXPOSE 80
 
-# Set the entry point to run the application
+# Entry point da aplicação
 ENTRYPOINT ["dotnet", "AutoAuction.API.dll"]
