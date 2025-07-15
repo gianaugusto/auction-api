@@ -23,7 +23,7 @@ namespace AutoAuction.ConsoleApp
 
             // Search vehicles
             Console.WriteLine("Searching for SUVs:");
-            foreach (var vehicle in auctionService.SearchVehicles("SUV"))
+            foreach (var vehicle in auctionService.SearchVehicles(VehicleType.SUV.ToString()))
             {
                 vehicle.DisplayInfo();
             }

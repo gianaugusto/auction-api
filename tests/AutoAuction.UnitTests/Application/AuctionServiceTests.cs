@@ -20,7 +20,7 @@ namespace AutoAuction.UnitTests.Application
             var vehicleDto = new VehicleDto
             {
                 Id = "V001",
-                Type = "Hatchback",
+                Type = VehicleType.Hatchback,
                 Manufacturer = "Toyota",
                 Model = "Yaris",
                 Year = 2020,
@@ -46,7 +46,7 @@ namespace AutoAuction.UnitTests.Application
             var vehicleDto1 = new VehicleDto
             {
                 Id = "V001",
-                Type = "Hatchback",
+                Type = VehicleType.Hatchback,
                 Manufacturer = "Toyota",
                 Model = "Yaris",
                 Year = 2020,
@@ -56,7 +56,7 @@ namespace AutoAuction.UnitTests.Application
             var vehicleDto2 = new VehicleDto
             {
                 Id = "V001",
-                Type = "Hatchback",
+                Type = VehicleType.Hatchback,
                 Manufacturer = "Honda",
                 Model = "Civic",
                 Year = 2019,
@@ -78,7 +78,7 @@ namespace AutoAuction.UnitTests.Application
             var vehicleDto = new VehicleDto
             {
                 Id = "V001",
-                Type = "Hatchback",
+                Type = VehicleType.Hatchback,
                 Manufacturer = "Toyota",
                 Model = "Yaris",
                 Year = 2020,

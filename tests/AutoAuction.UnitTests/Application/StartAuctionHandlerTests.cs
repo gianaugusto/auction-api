@@ -19,7 +19,7 @@ namespace AutoAuction.UnitTests.Application
             var vehicleDto = new VehicleDto
             {
                 Id = "V001",
-                Type = "Hatchback",
+                Type = VehicleType.Hatchback,
                 Manufacturer = "Toyota",
                 Model = "Yaris",
                 Year = 2020,

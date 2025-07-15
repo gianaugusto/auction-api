@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoAuction.Application.DTOs;
 using AutoAuction.Application;
+using AutoAuction.Domain;
 using System.Collections.Generic;
 
 namespace AutoAuction.API.Controllers
@@ -24,9 +25,9 @@ namespace AutoAuction.API.Controllers
         }
 
         [HttpGet("vehicles")]
-        public IActionResult SearchVehicles([FromQuery] string type = null, [FromQuery] string manufacturer = null, [FromQuery] string model = null, [FromQuery] int? year = null)
+        public IActionResult SearchVehicles([FromQuery] VehicleType? type = null, [FromQuery] string manufacturer = null, [FromQuery] string model = null, [FromQuery] int? year = null)
         {
-            var vehicles = _auctionService.SearchVehicles(type, manufacturer, model, year);
+            var vehicles = _auctionService.SearchVehicles(type?.ToString(), manufacturer, model, year);
             return Ok(vehicles);
         }
 
