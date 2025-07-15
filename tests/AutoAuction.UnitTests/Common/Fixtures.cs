@@ -1,27 +1,35 @@
 using AutoAuction.Domain;
+using AutoFixture;
 
 namespace AutoAuction.UnitTests.Common
 {
     public static class Fixtures
     {
+        private static readonly IFixture Fixture = new Fixture();
+
+        public static T Create<T>() where T : class
+        {
+            return Fixture.Create<T>();
+        }
+
         public static Hatchback GetHatchback()
         {
-            return new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            return Create<Hatchback>();
         }
 
         public static Sedan GetSedan()
         {
-            return new Sedan("V002", "Honda", "Civic", 2019, 6000m, 4);
+            return Create<Sedan>();
         }
 
         public static SUV GetSUV()
         {
-            return new SUV("V003", "Ford", "Explorer", 2018, 7000m, 7);
+            return Create<SUV>();
         }
 
         public static Truck GetTruck()
         {
-            return new Truck("V004", "Chevrolet", "Silverado", 2017, 8000m, 1.5m);
+            return Create<Truck>();
         }
     }
 }
