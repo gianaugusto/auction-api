@@ -1,3 +1,4 @@
+
 # Car Auction Management System
 
 This is a simple Car Auction Management System implemented in C#. The system allows users to:
@@ -102,4 +103,7 @@ To get a list of active auctions, send a GET request to `/api/auction/auctions/a
 
 ## Running Tests
 
-1. Run the unit tests using `dotnet test` in the `tests/AutoAuction.UnitTests` directory
+1. Run the unit tests using `dotnet test` in the root directory
+
+## Last build status
+[![Docker Image CI](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml)
