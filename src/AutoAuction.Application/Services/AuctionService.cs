@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoAuction.Domain;
 using AutoAuction.Domain.Repositories;
 using AutoAuction.Application.DTOs;
@@ -32,6 +34,11 @@ namespace AutoAuction.Application
             inventory[vehicle.Id] = vehicle;
         }
 
+        public Task AddVehicleAsync(VehicleDto vehicleDto, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => AddVehicle(vehicleDto), cancellationToken);
+        }
+
         public IEnumerable<Vehicle> SearchVehicles(string type = null, string manufacturer = null, string model = null, int? year = null)
         {
             if (year != null && year <= 0)
@@ -43,6 +50,11 @@ namespace AutoAuction.Application
                 (model == null || v.Model.Equals(model, StringComparison.OrdinalIgnoreCase)) &&
                 (year == null || v.Year == year)
             );
+        }
+
+        public Task<IEnumerable<Vehicle>> SearchVehiclesAsync(string type = null, string manufacturer = null, string model = null, int? year = null, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => SearchVehicles(type, manufacturer, model, year), cancellationToken);
         }
 
         public void StartAuction(string vehicleId)
@@ -67,6 +79,11 @@ namespace AutoAuction.Application
             auction.StartAuction();
         }
 
+        public Task StartAuctionAsync(string vehicleId, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => StartAuction(vehicleId), cancellationToken);
+        }
+
         public void PlaceBid(int auctionId, string bidderId, decimal bidAmount)
         {
             if (auctionId <= 0)
@@ -85,6 +102,11 @@ namespace AutoAuction.Application
             auction.PlaceBid(bidderId, bidAmount);
         }
 
+        public Task PlaceBidAsync(int auctionId, string bidderId, decimal bidAmount, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => PlaceBid(auctionId, bidderId, bidAmount), cancellationToken);
+        }
+
         public void CloseAuction(int auctionId)
         {
             if (auctionId <= 0)
@@ -97,9 +119,19 @@ namespace AutoAuction.Application
             auction.CloseAuction();
         }
 
+        public Task CloseAuctionAsync(int auctionId, CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => CloseAuction(auctionId), cancellationToken);
+        }
+
         public IEnumerable<Auction> GetActiveAuctions()
         {
             return _auctionRepository.GetAllAuctions().Where(a => a.IsActive);
+        }
+
+        public Task<IEnumerable<Auction>> GetActiveAuctionsAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.Run(() => GetActiveAuctions(), cancellationToken);
         }
     }
 }
