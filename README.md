@@ -1,78 +1,114 @@
-# AutoAuction
 
-AutoAuction is a sample project demonstrating a clean architecture approach for a simple auction system.
+# Car Auction Management System
 
-## Project Structure
+This is a simple Car Auction Management System implemented in C#. The system allows users to:
 
-- **src/AutoAuction.API**: ASP.NET Core presentation layer
-- **src/AutoAuction.Application**: Application services and use cases
-- **src/AutoAuction.Domain**: Domain entities, aggregates, and business rules
-- **src/AutoAuction.Infrastructure**: Technical implementations (e.g., database, integrations)
-- **src/AutoAuction.CrossCutting**: Cross-cutting concerns (logging, authentication, validation)
-- **tests/AutoAuction.UnitTests**: Unit tests for domain and application layers
-- **tests/AutoAuction.IntegrationTests**: Integration tests for the API
+1. Add vehicles to the auction inventory
+2. Search for vehicles by type, manufacturer, model, or year
+3. Start and close auctions for vehicles
+4. Place bids on vehicles during active auctions
 
-## Getting Started
+## Design Decisions
 
-1. Clone the repository
-2. Open the solution in Visual Studio or your preferred IDE
-3. Build and run the solution
+### Object-Oriented Design
+
+The system uses object-oriented design principles to model the different components:
+
+1. **Vehicle** - An abstract base class that defines common properties for all vehicle types
+2. **Vehicle Types** - Concrete classes for Hatchback, Sedan, SUV, and Truck that inherit from Vehicle
+3. **Auction** - A class that represents an auction for a vehicle, including bid management
+4. **AuctionService** - A service class that handles the business logic for managing auctions
+
+### Repository Pattern
+
+The repository pattern is used to abstract data access:
+
+1. **IAuctionRepository** - An interface that defines the contract for auction data access
+2. **AuctionRepository** - A concrete implementation of the repository interface
+
+### Dependency Injection
+
+Dependency injection is used to manage dependencies:
+
+1. Services are registered in the `Program.cs` file
+2. Dependencies are injected through constructors
+
+### Error Handling
+
+Error handling is implemented for various scenarios:
+
+1. Adding a vehicle with a duplicate ID
+2. Starting an auction for a non-existent vehicle or one already in an active auction
+3. Placing a bid on a non-active auction or with an invalid bid amount
+
+## How to Use
+
+### Adding a Vehicle
+
+To add a vehicle to the inventory, send a POST request to `/api/auction/vehicles` with a JSON body containing the vehicle details:
+
+```json
+{
+  "id": "V001",
+  "type": "Hatchback",
+  "manufacturer": "Toyota",
+  "model": "Yaris",
+  "year": 2020,
+  "startingBid": 5000.00,
+  "numberOfDoors": 5
+}
+```
+
+### Searching for Vehicles
+
+To search for vehicles, send a GET request to `/api/auction/vehicles` with query parameters:
+
+```
+/api/auction/vehicles?type=SUV&manufacturer=Ford
+```
+
+### Starting an Auction
+
+To start an auction for a vehicle, send a POST request to `/api/auction/auctions` with a JSON body:
+
+```json
+{
+  "vehicleId": "V001"
+}
+```
+
+### Placing a Bid
+
+To place a bid on an active auction, send a POST request to `/api/auction/auctions/{auctionId}/bids` with a JSON body:
+
+```json
+{
+  "bidderId": "Bidder1",
+  "bidAmount": 6000.00
+}
+```
+
+### Closing an Auction
+
+To close an active auction, send a POST request to `/api/auction/auctions/{auctionId}/close`.
+
+### Getting Active Auctions
+
+To get a list of active auctions, send a GET request to `/api/auction/auctions/active`.
+
+## Running the Application
+
+1. Build and run the application using `dotnet run` in the `src/AutoAuction.API` directory
+2. The API will be available at `https://localhost:5001/api/auction`
 
 ## Running Tests
 
-To run the unit tests, use the following command:
-
-```bash
-dotnet test tests/AutoAuction.UnitTests/AutoAuction.UnitTests.csproj
+To run the tests locally, use the command:
+```
+dotnet test
 ```
 
-To run the integration tests, use the following command:
+Alternatively, you can run the tests in the CI pipeline by pushing your changes to the repository. The pipeline will automatically execute the tests.
 
-```bash
-dotnet test tests/AutoAuction.IntegrationTests/AutoAuction.IntegrationTests.csproj
-```
-
-## Docker and Docker Compose
-
-This project includes Docker and Docker Compose configurations for easy setup and testing.
-
-### Services
-
-- **api**: The ASP.NET Core API service
-- **db**: PostgreSQL database service
-- **tests**: Unit tests service
-- **integration-tests**: Integration tests service
-
-### Running with Docker Compose
-
-1. Ensure Docker and Docker Compose are installed on your machine
-2. Navigate to the project root directory
-3. Run the following command to start all services:
-
-```bash
-docker-compose up --build
-```
-
-This will build and start the API, database, and test services.
-
-### Running Tests with Docker
-
-To run the unit tests:
-
-```bash
-docker-compose run tests
-```
-
-To run the integration tests:
-
-```bash
-docker-compose run integration-tests
-```
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License.
+## Last build status
+[![Docker Image CI](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml)

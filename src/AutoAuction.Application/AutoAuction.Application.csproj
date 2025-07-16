@@ -6,6 +6,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutoAuction.Domain\AutoAuction.Domain.csproj" />
+    <ProjectReference Include="..\AutoAuction.Infrastructure\AutoAuction.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

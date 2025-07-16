@@ -14,6 +14,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Run unit and integration tests
+      run: dotnet test --no-build --configuration Release --verbosity normal
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -30,8 +44,8 @@ jobs:
     - name: Build and push API Docker image
       uses: docker/build-push-action@v6
       with:
-        context: ./src/AutoAuction.API
-        file: ./src/AutoAuction.API/Dockerfile
+        context: .
+        file: ./Dockerfile
         push: true
         tags: |
           gianaugusto/auction-image-api:latest

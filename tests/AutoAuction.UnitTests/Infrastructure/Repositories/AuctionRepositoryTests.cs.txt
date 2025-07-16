@@ -1,0 +1,203 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoAuction.Domain;
+using AutoAuction.Domain.Exceptions;
+using AutoAuction.Infrastructure;
+using AutoAuction.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using Xunit;
+
+namespace AutoAuction.UnitTests.Infrastructure.Repositories
+{
+    public class AuctionRepositoryTests
+    {
+        private readonly DbContextOptions<DefaultContext> _options;
+        private readonly DefaultContext _context;
+
+        public AuctionRepositoryTests()
+        {
+            _options = new DbContextOptionsBuilder<DefaultContext>()
+                .UseInMemoryDatabase(databaseName: "AuctionRepositoryTests")
+                .Options;
+
+            _context = new DefaultContext(_options);
+            _context.Database.EnsureCreated();
+        }
+
+        [Fact]
+        public async Task AddAuctionAsync_ShouldAddAuction()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+
+            // Act
+            await repository.AddAuctionAsync(auction);
+
+            // Assert
+            var addedAuction = await _context.Auctions.FindAsync(auction.Id);
+            Assert.NotNull(addedAuction);
+            Assert.Equal(auction.Id, addedAuction.Id);
+            Assert.Equal(auction.Vehicle.Id, addedAuction.Vehicle.Id);
+        }
+
+        [Fact]
+        public async Task AddAuctionAsync_ShouldThrowException_WhenAuctionIsNull()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.AddAuctionAsync(null));
+        }
+
+        [Fact]
+        public async Task GetAuctionByIdAsync_ShouldReturnAuction()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            _context.Auctions.Add(auction);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetAuctionByIdAsync(auction.Id);
+
+            // Assert
+            Assert.Equal(auction.Id, result.Id);
+            Assert.Equal(auction.Vehicle.Id, result.Vehicle.Id);
+        }
+
+        [Fact]
+        public async Task GetAuctionByIdAsync_ShouldThrowException_WhenAuctionIdIsInvalid()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => repository.GetAuctionByIdAsync(0));
+        }
+
+        [Fact]
+        public async Task GetAuctionByIdAsync_ShouldThrowException_WhenAuctionNotFound()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<AuctionNotFoundException>(() => repository.GetAuctionByIdAsync(999));
+        }
+
+        [Fact]
+        public async Task GetAllAuctionsAsync_ShouldReturnActiveAuctions()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var activeAuction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            activeAuction.StartAuction();
+            var inactiveAuction = new Auction(new Hatchback("V002", "Honda", "Civic", 2019, 6000m, 5));
+            _context.Auctions.AddRange(activeAuction, inactiveAuction);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetAllAuctionsAsync(true);
+
+            // Assert
+            Assert.Single(result);
+            Assert.Equal(activeAuction.Id, result.First().Id);
+        }
+
+        [Fact]
+        public async Task PlaceBidAsync_ShouldPlaceBid()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            auction.StartAuction();
+            _context.Auctions.Add(auction);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await repository.PlaceBidAsync(auction.Id, "Bidder1", 6000m);
+
+            // Assert
+            var updatedAuction = await _context.Auctions.FindAsync(auction.Id);
+            Assert.Equal(6000m, updatedAuction.CurrentHighestBid);
+        }
+
+        [Fact]
+        public async Task PlaceBidAsync_ShouldThrowException_WhenAuctionNotFound()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<AuctionNotFoundException>(() => repository.PlaceBidAsync(999, "Bidder1", 6000m));
+        }
+
+        [Fact]
+        public async Task StartAuctionForVehicleAsync_ShouldStartAuction()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await repository.StartAuctionForVehicleAsync(vehicle);
+
+            // Assert
+            var auction = await _context.Auctions.FirstOrDefaultAsync(a => a.Vehicle.Id == vehicle.Id);
+            Assert.NotNull(auction);
+            Assert.True(auction.IsActive);
+        }
+
+        [Fact]
+        public async Task StartAuctionForVehicleAsync_ShouldThrowException_WhenVehicleAlreadyInAuction()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var auction = new Auction(vehicle);
+            auction.StartAuction();
+            _context.Auctions.Add(auction);
+            await _context.SaveChangesAsync();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<VehicleAlreadyInAuctionException>(() => repository.StartAuctionForVehicleAsync(vehicle));
+        }
+
+        [Fact]
+        public async Task CloseAuctionAsync_ShouldCloseAuction()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
+            auction.StartAuction();
+            _context.Auctions.Add(auction);
+            await _context.SaveChangesAsync();
+
+            // Act
+            await repository.CloseAuctionAsync(auction.Id);
+
+            // Assert
+            var updatedAuction = await _context.Auctions.FindAsync(auction.Id);
+            Assert.False(updatedAuction.IsActive);
+        }
+
+        [Fact]
+        public async Task CloseAuctionAsync_ShouldThrowException_WhenAuctionNotFound()
+        {
+            // Arrange
+            var repository = new AuctionRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<AuctionNotFoundException>(() => repository.CloseAuctionAsync(999));
+        }
+    }
+}
