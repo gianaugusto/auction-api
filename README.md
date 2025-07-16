@@ -1,4 +1,3 @@
-
 # Car Auction Management System
 
 This is a simple Car Auction Management System implemented in C#. The system allows users to:
@@ -14,17 +13,20 @@ This is a simple Car Auction Management System implemented in C#. The system all
 
 The system uses object-oriented design principles to model the different components:
 
-1. **Vehicle** - An abstract base class that defines common properties for all vehicle types
-2. **Vehicle Types** - Concrete classes for Hatchback, Sedan, SUV, and Truck that inherit from Vehicle
-3. **Auction** - A class that represents an auction for a vehicle, including bid management
-4. **AuctionService** - A service class that handles the business logic for managing auctions
+1. **Vehicle** - An abstract base class that defines common properties for all vehicle types, such as ID, manufacturer, model, year, and starting bid. This class serves as the foundation for the inventory system.
+2. **Vehicle Types** - Concrete classes for Hatchback, Sedan, SUV, and Truck that inherit from Vehicle. These classes represent specific types of vehicles in the inventory.
+3. **InventoryService** - A service class that handles the business logic for managing inventory, including adding and searching for vehicles.
+4. **Auction** - A class that represents an auction for a vehicle, including bid management
+5. **AuctionService** - A service class that handles the business logic for managing auctions
 
 ### Repository Pattern
 
 The repository pattern is used to abstract data access:
 
-1. **IAuctionRepository** - An interface that defines the contract for auction data access
-2. **AuctionRepository** - A concrete implementation of the repository interface
+1. **IInventoryRepository** - An interface that defines the contract for inventory data access
+2. **InventoryRepository** - A concrete implementation of the repository interface
+3. **IAuctionRepository** - An interface that defines the contract for auction data access
+4. **AuctionRepository** - A concrete implementation of the repository interface
 
 ### Dependency Injection
 
@@ -45,7 +47,7 @@ Error handling is implemented for various scenarios:
 
 ### Adding a Vehicle
 
-To add a vehicle to the inventory, send a POST request to `/api/auction/vehicles` with a JSON body containing the vehicle details:
+To add a vehicle to the inventory, send a POST request to `/api/inventory/vehicles` with a JSON body containing the vehicle details:
 
 ```json
 {
@@ -61,10 +63,10 @@ To add a vehicle to the inventory, send a POST request to `/api/auction/vehicles
 
 ### Searching for Vehicles
 
-To search for vehicles, send a GET request to `/api/auction/vehicles` with query parameters:
+To search for vehicles, send a GET request to `/api/inventory/vehicles` with query parameters:
 
 ```
-/api/auction/vehicles?type=SUV&manufacturer=Ford
+/api/inventory/vehicles?type=SUV&manufacturer=Ford
 ```
 
 ### Starting an Auction
@@ -100,6 +102,7 @@ To get a list of active auctions, send a GET request to `/api/auction/auctions/a
 
 1. Build and run the application using `dotnet run` in the `src/AutoAuction.API` directory
 2. The API will be available at `https://localhost:5001/api/auction`
+3. In development mode, Swagger UI will be available at `https://localhost:5001/swagger`
 
 ## Running Tests
 
