@@ -103,7 +103,12 @@ To get a list of active auctions, send a GET request to `/api/auction/auctions/a
 
 ## Running Tests
 
-1. Run the unit tests using `dotnet test` in the root directory
+To run the tests locally, use the command:
+```
+dotnet test
+```
+
+Alternatively, you can run the tests in the CI pipeline by pushing your changes to the repository. The pipeline will automatically execute the tests.
 
 ## Last build status
 [![Docker Image CI](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/gianaugusto/auction-api/actions/workflows/docker-publish.yml)

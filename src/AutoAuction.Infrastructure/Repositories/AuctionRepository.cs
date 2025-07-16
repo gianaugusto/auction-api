@@ -45,7 +45,7 @@ namespace AutoAuction.Infrastructure.Repositories
         {
             await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-            var auction = await _context.Auctions.FindAsync([auctionId], cancellationToken);
+            var auction = await _context.Auctions.FindAsync(auctionId, cancellationToken);
 
             if (auction == null)
                 throw new AuctionNotFoundException(auctionId);

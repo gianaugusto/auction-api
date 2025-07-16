@@ -46,7 +46,7 @@ namespace AutoAuction.Application
             if (bidAmount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(bidAmount), "Bid amount must be greater than zero");
 
-            await _auctionRepository.PlaceBidAsync(auctionId,bidderId,bidAmount, cancellationToken);
+            await _auctionRepository.PlaceBidAsync(auctionId, bidderId, bidAmount, cancellationToken);
         }
 
         public async Task CloseAuctionAsync(int auctionId, CancellationToken cancellationToken = default)

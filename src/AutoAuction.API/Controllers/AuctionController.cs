@@ -23,9 +23,9 @@ namespace AutoAuction.API.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> StartAuction([FromBody] Application.DTOs.StartAuctionDto startAuctionDto, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> StartAuction([FromBody] StartAuctionDto startAuctionDto, CancellationToken cancellationToken = default)
         {
-            if (startAuctionDto == null)
+            if (startAuctionDto is null)
             {
                 return BadRequest(new ApiResponse { Success = false, Message = "StartAuctionDto cannot be null" });
             }

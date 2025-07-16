@@ -1,15 +1,16 @@
+using AutoAuction.Application;
+using AutoAuction.CrossCutting.Logging;
+using AutoAuction.Domain.Repositories;
+using AutoAuction.Infrastructure;
+using AutoAuction.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutoAuction.Application;
-using AutoAuction.Domain.Repositories;
-using AutoAuction.Infrastructure.Repositories;
-using AutoAuction.CrossCutting.Logging;
-using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
-using AutoAuction.Infrastructure;
-using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AutoAuction.API
@@ -65,17 +66,21 @@ namespace AutoAuction.API
                 });
             });
 
-            // Register my DB Context
+            // Register my DB
+            var connection = new SqliteConnection("DataSource=:memory:");
+            connection.Open(); // keep open!
+
             builder.Services.AddDbContext<DefaultContext>(options =>
-                    options.UseInMemoryDatabase("AutoAuctionDb"));
+                options.UseSqlite(connection));
 
             // Register application services
             builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
             builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
-            builder.Services.AddScoped<IAuctionService,AuctionService>();
-            builder.Services.AddScoped<IInventoryService,InventoryService>();
+            builder.Services.AddScoped<IAuctionService, AuctionService>();
+            builder.Services.AddScoped<IInventoryService, InventoryService>();
             builder.Services.AddSingleton<ILogger, Logger>();
             builder.Services.AddScoped<DatabaseSeeder>();
+            builder.Services.AddScoped<IntegrationTestSeeder>();
 
             var app = builder.Build();
 

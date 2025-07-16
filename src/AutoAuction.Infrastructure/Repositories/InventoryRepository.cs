@@ -34,13 +34,14 @@ namespace AutoAuction.Infrastructure.Repositories
             var query = _context.Vehicles.AsQueryable();
 
             if (!string.IsNullOrEmpty(type))
-                query = query.Where(v => EF.Property<string>(v, "VehicleType").Equals(type, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(v => EF.Property<string>(v, "VehicleType").ToLower() == type.ToLower());
 
             if (!string.IsNullOrEmpty(manufacturer))
-                query = query.Where(v => v.Manufacturer.Equals(manufacturer, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(v => v.Manufacturer.ToLower() == manufacturer.ToLower());
+
 
             if (!string.IsNullOrEmpty(model))
-                query = query.Where(v => v.Model.Equals(model, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(v => v.Model.ToLower() == model.ToLower());
 
             if (year.HasValue)
                 query = query.Where(v => v.Year == year.Value);

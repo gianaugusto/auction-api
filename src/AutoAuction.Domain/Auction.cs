@@ -13,7 +13,6 @@ namespace AutoAuction.Domain
         public Vehicle Vehicle { get; private set; }
         public bool IsActive { get; private set; }
         public decimal CurrentHighestBid { get; private set; }
-
         public byte[] RowVersion { get; private set; }
 
         public IReadOnlyCollection<Bid> Bids => _bids.AsReadOnly();

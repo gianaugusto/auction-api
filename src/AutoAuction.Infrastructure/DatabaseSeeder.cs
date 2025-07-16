@@ -1,5 +1,6 @@
 using AutoAuction.Domain;
 using AutoAuction.Infrastructure;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -9,29 +10,30 @@ namespace AutoAuction.Infrastructure
 {
     public class DatabaseSeeder
     {
-        private readonly DbContextOptions<DefaultContext> _options;
+        private readonly DefaultContext _context;
 
-        public DatabaseSeeder(DbContextOptions<DefaultContext> options)
+        public DatabaseSeeder(DefaultContext context)
         {
-            _options = options;
+            _context = context;
         }
 
         public async Task SeedAsync()
         {
-            using var context = new DefaultContext(_options);
+            await _context.Database.EnsureCreatedAsync();
 
-            if (!context.Vehicles.Any())
+            if (!_context.Vehicles.Any())
             {
                 Vehicle[] vehicles = new Vehicle[]
                 {
-                    new Sedan("1", "Toyota", "Camry", 2020, 10000, 4),
-                    new Sedan("2", "Honda", "Civic", 2019, 8000, 4),
-                    new SUV("3", "Ford", "Explorer", 2021, 15000, 7)
+                new Sedan("1", "Toyota", "Camry", 2020, 10000, 4),
+                new Sedan("2", "Honda", "Civic", 2019, 8000, 4),
+                new SUV("3", "Ford", "Explorer", 2021, 15000, 7)
                 };
 
-                await context.Vehicles.AddRangeAsync(vehicles);
-                await context.SaveChangesAsync();
+                await _context.Vehicles.AddRangeAsync(vehicles);
+                await _context.SaveChangesAsync();
             }
         }
     }
+
 }
