@@ -28,7 +28,7 @@ namespace AutoAuction.Application.DTOs
         public int Year { get; set; }
 
         [Required]
-        [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+        [Range(1, int.MaxValue)] 
         public decimal StartingBid { get; set; }
 
         [Range(0, int.MaxValue)]
@@ -37,7 +37,7 @@ namespace AutoAuction.Application.DTOs
         [Range(0, int.MaxValue)]
         public int? NumberOfSeats { get; set; }
 
-        [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
+        [Range(1, int.MaxValue)]
         public decimal? LoadCapacity { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using AutoAuction.Domain;
+using AutoAuction.Infrastructure.Mappings;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoAuction.Infrastructure
@@ -14,8 +15,9 @@ namespace AutoAuction.Infrastructure
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Auction>().HasKey(a => a.Id);
+
+            modelBuilder.ApplyConfiguration(new AuctionMapping());
+            modelBuilder.ApplyConfiguration(new VehicleMapping());
         }
     }
 }
-    

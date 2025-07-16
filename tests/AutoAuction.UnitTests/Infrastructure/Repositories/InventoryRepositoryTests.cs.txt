@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoAuction.Domain;
+using AutoAuction.Infrastructure;
+using AutoAuction.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Xunit;
+
+namespace AutoAuction.UnitTests.Infrastructure.Repositories
+{
+    public class InventoryRepositoryTests
+    {
+        private readonly DbContextOptions<DefaultContext> _options;
+        private readonly DefaultContext _context;
+
+        public InventoryRepositoryTests()
+        {
+            _options = new DbContextOptionsBuilder<DefaultContext>()
+                .UseInMemoryDatabase(databaseName: "InventoryRepositoryTests")
+                .Options;
+
+            _context = new DefaultContext(_options);
+            _context.Database.EnsureCreated();
+        }
+
+        [Fact]
+        public async Task AddVehicleAsync_ShouldAddVehicle()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+
+            // Act
+            await repository.AddVehicleAsync(vehicle);
+
+            // Assert
+            var addedVehicle = await _context.Vehicles.FindAsync(vehicle.Id);
+            Assert.NotNull(addedVehicle);
+            Assert.Equal(vehicle.Id, addedVehicle.Id);
+        }
+
+        [Fact]
+        public async Task AddVehicleAsync_ShouldThrowException_WhenVehicleIsNull()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentNullException>(() => repository.AddVehicleAsync(null));
+        }
+
+        [Fact]
+        public async Task AddVehicleAsync_ShouldThrowException_WhenVehicleAlreadyExists()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => repository.AddVehicleAsync(vehicle));
+        }
+
+        [Fact]
+        public async Task GetVehiclesAsync_ShouldReturnMatchingVehicles()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+            var vehicle1 = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            var vehicle2 = new Hatchback("V002", "Honda", "Civic", 2019, 6000m, 5);
+            _context.Vehicles.AddRange(vehicle1, vehicle2);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetVehiclesAsync("Hatchback");
+
+            // Assert
+            Assert.Equal(2, result.Count());
+        }
+
+        [Fact]
+        public async Task GetVehiclesAsync_ShouldThrowException_WhenYearIsInvalid()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => repository.GetVehiclesAsync(year: 0));
+        }
+
+        [Fact]
+        public async Task GetVehiclesByIdAsync_ShouldReturnVehicle()
+        {
+            // Arrange
+            var repository = new InventoryRepository(_context);
+            var vehicle = new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5);
+            _context.Vehicles.Add(vehicle);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await repository.GetVehiclesByIdAsync(vehicle.Id, CancellationToken.None);
+
+            // Assert
+            Assert.Equal(vehicle.Id, result.Id);
+        }
+    }
+}

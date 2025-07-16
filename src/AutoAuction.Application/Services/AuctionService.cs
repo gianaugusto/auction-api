@@ -8,7 +8,6 @@ using AutoAuction.Domain.Repositories;
 using AutoAuction.Application.DTOs;
 using AutoAuction.Application.Mappers;
 using AutoAuction.Domain.Exceptions;
-using System.Transactions;
 
 namespace AutoAuction.Application
 {
@@ -33,54 +32,29 @@ namespace AutoAuction.Application
             if (vehicle == null)
                 throw new VehicleNotFoundException(vehicleId);
 
-            // Check if the vehicle is already in an active auction
-            var allAuctions = await _auctionRepository.GetAllAuctionsAsync(true, cancellationToken);
-            var existingAuction = allAuctions.FirstOrDefault(a => a.Vehicle.Id == vehicleId && a.IsActive);
-
-            if (existingAuction != null)
-                throw new VehicleAlreadyInAuctionException(vehicleId);
-
-            var auction = new Auction(vehicle);
-            await _auctionRepository.AddAuctionAsync(auction, cancellationToken);
-
-            auction.StartAuction();
+            await _auctionRepository.StartAuctionForVehicleAsync(vehicle, cancellationToken);
         }
 
         public async Task PlaceBidAsync(int auctionId, string bidderId, decimal bidAmount, CancellationToken cancellationToken = default)
         {
-            using (var scope = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
-            {
-                if (auctionId <= 0)
-                    throw new ArgumentOutOfRangeException(nameof(auctionId), "Auction ID must be greater than zero");
+            if (auctionId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(auctionId), "Auction ID must be greater than zero");
 
-                if (string.IsNullOrWhiteSpace(bidderId))
-                    throw new ArgumentException("Bidder ID cannot be null or empty", nameof(bidderId));
+            if (string.IsNullOrWhiteSpace(bidderId))
+                throw new ArgumentException("Bidder ID cannot be null or empty", nameof(bidderId));
 
-                if (bidAmount <= 0)
-                    throw new ArgumentOutOfRangeException(nameof(bidAmount), "Bid amount must be greater than zero");
+            if (bidAmount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(bidAmount), "Bid amount must be greater than zero");
 
-                var auction = await _auctionRepository.GetAuctionByIdAsync(auctionId, cancellationToken);
-
-                if (auction == null)
-                    throw new AuctionNotFoundException(auctionId);
-
-                auction.PlaceBid(bidderId, bidAmount);
-                
-                scope.Complete();
-            }
-            
+            await _auctionRepository.PlaceBidAsync(auctionId,bidderId,bidAmount, cancellationToken);
         }
 
         public async Task CloseAuctionAsync(int auctionId, CancellationToken cancellationToken = default)
         {
             if (auctionId <= 0)
-                throw new ArgumentOutOfRangeException(nameof(auctionId), "Auction ID must be greater than zero");
+                throw new ArgumentOutOfRangeException(nameof(auctionId));
 
-            var auction = await _auctionRepository.GetAuctionByIdAsync(auctionId, cancellationToken);
-            if (auction == null)
-                throw new AuctionNotFoundException(auctionId);
-
-            auction.CloseAuction();
+            await _auctionRepository.CloseAuctionAsync(auctionId, cancellationToken);
         }
 
         public async Task<IEnumerable<Auction>> GetActiveAuctionsAsync(bool active = true, CancellationToken cancellationToken = default)

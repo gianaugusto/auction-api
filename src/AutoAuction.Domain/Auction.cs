@@ -1,31 +1,29 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using AutoAuction.Domain.Exceptions;
 
 namespace AutoAuction.Domain
 {
     public class Auction
     {
+        private readonly List<Bid> _bids = new();
+        private static int _nextId = 1;
+
         public int Id { get; private set; }
-
         public Vehicle Vehicle { get; private set; }
-
         public bool IsActive { get; private set; }
-
         public decimal CurrentHighestBid { get; private set; }
 
-        private List<Bid> bids = new List<Bid>();
+        public byte[] RowVersion { get; private set; }
 
-        private static int nextId = 1;
+        public IReadOnlyCollection<Bid> Bids => _bids.AsReadOnly();
 
-        [Timestamp] // just to check if updated
-        public byte[] RowVersion { get; set; }
+        // EF Core constructor
+        private Auction() { }
 
         public Auction(Vehicle vehicle)
         {
-            Id = nextId++;
+            Id = _nextId++;
             Vehicle = vehicle ?? throw new ArgumentNullException(nameof(vehicle));
             CurrentHighestBid = vehicle.StartingBid;
         }
@@ -46,14 +44,11 @@ namespace AutoAuction.Domain
             if (string.IsNullOrWhiteSpace(bidderId))
                 throw new ArgumentException("Bidder ID cannot be null or empty", nameof(bidderId));
 
-            if (bidAmount <= 0)
-                throw new ArgumentException("Bid amount must be greater than zero", nameof(bidAmount));
-
             if (bidAmount <= CurrentHighestBid)
                 throw new InvalidBidAmountException(bidAmount, CurrentHighestBid);
 
             var bid = new Bid(bidderId, bidAmount);
-            bids.Add(bid);
+            _bids.Add(bid);
             CurrentHighestBid = bidAmount;
         }
 
@@ -65,16 +60,13 @@ namespace AutoAuction.Domain
             IsActive = false;
         }
 
-        public IEnumerable<Bid> GetBids()
-        {
-            return bids.AsReadOnly();
-        }
-
         public class Bid
         {
             public string BidderId { get; private set; }
             public decimal BidAmount { get; private set; }
             public DateTime BidTime { get; private set; }
+
+            private Bid() { } // EF Core
 
             public Bid(string bidderId, decimal bidAmount)
             {

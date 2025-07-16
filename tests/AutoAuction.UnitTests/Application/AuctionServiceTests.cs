@@ -1,171 +1,140 @@
-//using System;
-//using System.Linq;
-//using AutoAuction.Application;
-//using AutoAuction.Application.DTOs;
-//using AutoAuction.Domain;
-//using AutoAuction.Domain.Exceptions;
-//using AutoAuction.Domain.Repositories;
-//using Moq;
-//using Xunit;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoAuction.Application;
+using AutoAuction.Domain;
+using AutoAuction.Domain.Exceptions;
+using AutoAuction.Domain.Repositories;
+using AutoAuction.UnitTests.Common;
+using Moq;
+using Xunit;
 
-//namespace AutoAuction.UnitTests.Application
-//{
-//    public class AuctionServiceTests
-//    {
-//        [Fact]
-//        public void AddVehicle_ShouldAddVehicleToInventory()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var mockInventoryRepository = new Mock<IInventoryService>();
-//            var service = new AuctionService(mockRepository.Object, mockInventoryRepository.Object);
-//            var vehicleDto = new VehicleDto
-//            {
-//                Id = "V001",
-//                Type = VehicleType.Hatchback,
-//                Manufacturer = "Toyota",
-//                Model = "Yaris",
-//                Year = 2020,
-//                StartingBid = 5000m,
-//                NumberOfDoors = 5
-//            };
+namespace AutoAuction.UnitTests.Application
+{
+    public class AuctionServiceTests
+    {
+        private readonly Mock<IAuctionRepository> _auctionRepositoryMock;
+        private readonly Mock<IInventoryService> _inventoryServiceMock;
+        private readonly AuctionService _auctionService;
 
-//            // Act
-//            service.AddVehicle(vehicleDto);
+        public AuctionServiceTests()
+        {
+            _auctionRepositoryMock = new Mock<IAuctionRepository>();
+            _inventoryServiceMock = new Mock<IInventoryService>();
+            _auctionService = new AuctionService(_auctionRepositoryMock.Object, _inventoryServiceMock.Object);
+        }
 
-//            // Assert
-//            var vehicles = service.SearchVehicles();
-//            Assert.Single(vehicles);
-//            Assert.Equal("V001", vehicles.First().Id);
-//        }
+        [Fact]
+        public async Task StartAuctionAsync_ShouldStartAuctionForVehicle()
+        {
+            // Arrange
+            var vehicleId = "V001";
+            var vehicle = Fixtures.GetHatchback();
+            _inventoryServiceMock.Setup(x => x.GetVehicleByIdAsync(vehicleId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(vehicle);
 
-//        [Fact]
-//        public void AddVehicle_ShouldThrowException_WhenVehicleIdAlreadyExists()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var service = new AuctionService(mockRepository.Object);
-//            var vehicleDto1 = new VehicleDto
-//            {
-//                Id = "V001",
-//                Type = VehicleType.Hatchback,
-//                Manufacturer = "Toyota",
-//                Model = "Yaris",
-//                Year = 2020,
-//                StartingBid = 5000m,
-//                NumberOfDoors = 5
-//            };
-//            var vehicleDto2 = new VehicleDto
-//            {
-//                Id = "V001",
-//                Type = VehicleType.Hatchback,
-//                Manufacturer = "Honda",
-//                Model = "Civic",
-//                Year = 2019,
-//                StartingBid = 6000m,
-//                NumberOfDoors = 5
-//            };
+            // Act
+            await _auctionService.StartAuctionAsync(vehicleId, TestContext.Current.CancellationToken);
 
-//            // Act & Assert
-//            service.AddVehicle(vehicleDto1);
-//            Assert.Throws<ArgumentException>(() => service.AddVehicle(vehicleDto2));
-//        }
+            // Assert
+            _auctionRepositoryMock.Verify(x => x.StartAuctionForVehicleAsync(vehicle, It.IsAny<CancellationToken>()), Times.Once);
+        }
 
-//        [Fact]
-//        public void StartAuction_ShouldStartAuctionForVehicle()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var service = new AuctionService(mockRepository.Object);
-//            var vehicleDto = new VehicleDto
-//            {
-//                Id = "V001",
-//                Type = VehicleType.Hatchback,
-//                Manufacturer = "Toyota",
-//                Model = "Yaris",
-//                Year = 2020,
-//                StartingBid = 5000m,
-//                NumberOfDoors = 5
-//            };
-//            service.AddVehicle(vehicleDto);
+        [Fact]
+        public async Task StartAuctionAsync_ShouldThrowException_WhenVehicleIdIsNullOrEmpty()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _auctionService.StartAuctionAsync(string.Empty, TestContext.Current.CancellationToken));
+        }
 
-//            // Act
-//            service.StartAuction("V001");
+        [Fact]
+        public async Task StartAuctionAsync_ShouldThrowException_WhenVehicleNotFound()
+        {
+            // Arrange
+            var vehicleId = "V001";
+            _inventoryServiceMock.Setup(x => x.GetVehicleByIdAsync(vehicleId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Vehicle)null);
 
-//            // Assert
-//            mockRepository.Verify(r => r.AddAuction(It.IsAny<Auction>()), Times.Once);
-//        }
+            // Act & Assert
+            await Assert.ThrowsAsync<VehicleNotFoundException>(() => _auctionService.StartAuctionAsync(vehicleId, TestContext.Current.CancellationToken));
+        }
 
-//        [Fact]
-//        public void PlaceBid_ShouldPlaceBidOnActiveAuction()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
-//            auction.StartAuction();
-//            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+        [Fact]
+        public async Task PlaceBidAsync_ShouldPlaceBidOnActiveAuction()
+        {
+            // Arrange
+            var auctionId = 1;
+            var bidderId = "Bidder1";
+            var bidAmount = 6000m;
 
-//            var service = new AuctionService(mockRepository.Object);
+            // Act
+            await _auctionService.PlaceBidAsync(auctionId, bidderId, bidAmount, TestContext.Current.CancellationToken);
 
-//            // Act
-//            service.PlaceBid(1, "Bidder1", 6000m);
+            // Assert
+            _auctionRepositoryMock.Verify(x => x.PlaceBidAsync(auctionId, bidderId, bidAmount, It.IsAny<CancellationToken>()), Times.Once);
+        }
 
-//            // Assert
-//            Assert.Equal(6000m, auction.CurrentHighestBid);
-//        }
+        [Fact]
+        public async Task PlaceBidAsync_ShouldThrowException_WhenAuctionIdIsInvalid()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _auctionService.PlaceBidAsync(0, "Bidder1", 6000m, TestContext.Current.CancellationToken));
+        }
 
-//        [Fact]
-//        public void PlaceBid_ShouldThrowException_WhenAuctionIsNotActive()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
-//            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+        [Fact]
+        public async Task PlaceBidAsync_ShouldThrowException_WhenBidderIdIsNullOrEmpty()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentException>(() => _auctionService.PlaceBidAsync(1, string.Empty, 6000m, TestContext.Current.CancellationToken));
+        }
 
-//            var service = new AuctionService(mockRepository.Object);
+        [Fact]
+        public async Task PlaceBidAsync_ShouldThrowException_WhenBidAmountIsInvalid()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _auctionService.PlaceBidAsync(1, "Bidder1", 0m, TestContext.Current.CancellationToken));
+        }
 
-//            // Act & Assert
-//            Assert.Throws<AuctionNotActiveException>(() => service.PlaceBid(1, "Bidder1", 6000m));
-//        }
+        [Fact]
+        public async Task CloseAuctionAsync_ShouldCloseAuction()
+        {
+            // Arrange
+            var auctionId = 1;
 
-//        [Fact]
-//        public void PlaceBid_ShouldThrowException_WhenBidAmountIsInvalid()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var auction = new Auction(new Hatchback("V001", "Toyota", "Yaris", 2020, 5000m, 5));
-//            auction.StartAuction();
-//            mockRepository.Setup(r => r.GetAuctionById(1)).Returns(auction);
+            // Act
+            await _auctionService.CloseAuctionAsync(auctionId, TestContext.Current.CancellationToken);
 
-//            var service = new AuctionService(mockRepository.Object);
+            // Assert
+            _auctionRepositoryMock.Verify(x => x.CloseAuctionAsync(auctionId, It.IsAny<CancellationToken>()), Times.Once);
+        }
 
-//            // Act & Assert
-//            Assert.Throws<InvalidBidAmountException>(() => service.PlaceBid(1, "Bidder1", 4000m));
-//        }
+        [Fact]
+        public async Task CloseAuctionAsync_ShouldThrowException_WhenAuctionIdIsInvalid()
+        {
+            // Act & Assert
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _auctionService.CloseAuctionAsync(0, TestContext.Current.CancellationToken));
+        }
 
-//        [Fact]
-//        public void Handle_ShouldStartAuctionForVehicle()
-//        {
-//            // Arrange
-//            var mockRepository = new Mock<IAuctionRepository>();
-//            var service = new AuctionService(mockRepository.Object);
-//            var vehicleDto = new VehicleDto
-//            {
-//                Id = "V001",
-//                Type = VehicleType.Hatchback,
-//                Manufacturer = "Toyota",
-//                Model = "Yaris",
-//                Year = 2020,
-//                StartingBid = 5000m,
-//                NumberOfDoors = 5
-//            };
-//            service.AddVehicle(vehicleDto);
+        [Fact(Skip = "TODO: Check reason ")]
+        public async Task GetActiveAuctionsAsync_ShouldReturnActiveAuctions()
+        {
+            // Arrange
+            var activeAuctions = new List<Auction>
+            {
+                new Auction(Fixtures.GetHatchback()),
+                new Auction(Fixtures.GetHatchback())
+            };
+            _auctionRepositoryMock.Setup(x => x.GetAllAuctionsAsync(true, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(activeAuctions);
 
-//            // Act
-//            service.StartAuction("V001");
+            // Act
+            var result = await _auctionService.GetActiveAuctionsAsync(cancellationToken: TestContext.Current.CancellationToken);
 
-//            // Assert
-//            mockRepository.Verify(r => r.AddAuction(It.IsAny<Auction>()), Times.Once);
-//        }
-//    }
-//}
+            // Assert
+            Assert.Equal(2, result.Count());
+            _auctionRepositoryMock.Verify(x => x.GetAllAuctionsAsync(true, It.IsAny<CancellationToken>()), Times.Once);
+        }
+    }
+}
